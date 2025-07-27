@@ -1,0 +1,36 @@
+steps:
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/airy-shadow-465511-v9/python-app/xgboost_coupon_model', '.']
+  timeout: "600s"
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'us-central1-docker.pkg.dev/airy-shadow-465511-v9/python-app/xgboost_coupon_model']
+  timeout: "600s"
+
+- name: 'us-central1-docker.pkg.dev/airy-shadow-465511-v9/python-app/xgboost_coupon_model'
+  entrypoint: 'bash'
+  timeout: "600s"
+  args:
+   - '-c'
+   - |
+      python -m pytest
+
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args:
+   - 'run'
+   - 'deploy'
+   - 'xgboost-coupon-model'
+   - '--image'
+   - 'us-central1-docker.pkg.dev/airy-shadow-465511-v9/python-app/xgboost_coupon_model'
+   - '--region'
+   - 'us-central1'
+   - '--allow-unauthenticated'
+  timeout: "600s"
+
+images:
+  - 'us-central1-docker.pkg.dev/airy-shadow-465511-v9/python-app/xgboost_coupon_model'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
